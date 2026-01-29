@@ -31,7 +31,9 @@ class CorsConfig {
                 "http://localhost:3000",
                 "http://127.0.0.1:3000",
                 "http://13.209.77.227",
-                "http://13.209.77.227:3000"
+                "http://13.209.77.227:3000",
+                "https://ourspots.life",
+                "http://ourspots.life"
             )
             allowedMethods = listOf("GET", "POST", "PUT", "DELETE", "OPTIONS")
             allowedHeaders = listOf("*")
