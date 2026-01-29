@@ -12,3 +12,6 @@ spring:
     properties:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
+
+app:
+  admin-password: ${ADMIN_PASSWORD:}

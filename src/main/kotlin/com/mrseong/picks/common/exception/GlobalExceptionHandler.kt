@@ -22,6 +22,18 @@ class GlobalExceptionHandler {
         return ApiResponse.error(e.message ?: "Duplicate entry")
     }
 
+    @ExceptionHandler(UnauthorizedException::class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    fun handleUnauthorizedException(e: UnauthorizedException): ApiResponse<Nothing> {
+        return ApiResponse.error(e.message ?: "Unauthorized")
+    }
+
+    @ExceptionHandler(TooManyRequestsException::class)
+    @ResponseStatus(HttpStatus.TOO_MANY_REQUESTS)
+    fun handleTooManyRequestsException(e: TooManyRequestsException): ApiResponse<Nothing> {
+        return ApiResponse.error(e.message ?: "Too many requests")
+    }
+
     @ExceptionHandler(MethodArgumentNotValidException::class)
     @ResponseStatus(HttpStatus.BAD_REQUEST)
     fun handleValidationException(e: MethodArgumentNotValidException): ApiResponse<Nothing> {

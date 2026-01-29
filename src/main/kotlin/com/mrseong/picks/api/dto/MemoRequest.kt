@@ -11,11 +11,18 @@ data class MemoCreateRequest(
     @field:NotNull
     val rating: Rating,
 
-    val comment: String? = null
+    val comment: String? = null,
+
+    val password: String? = null
 )
 
 data class MemoUpdateRequest(
     val itemName: String? = null,
     val rating: Rating? = null,
-    val comment: String? = null
+    val comment: String? = null,
+    val password: String? = null
+)
+
+data class MemoDeleteRequest(
+    val password: String? = null
 )
