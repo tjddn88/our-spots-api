@@ -24,9 +24,7 @@ data class PlaceCreateRequest(
 
     val imageUrl: String? = null,
 
-    val grade: Int? = null,
-
-    val password: String? = null
+    val grade: Int? = null
 )
 
 data class PlaceUpdateRequest(
@@ -40,10 +38,5 @@ data class PlaceUpdateRequest(
     val grade: Int? = null,
     val googlePlaceId: String? = null,
     val googleRating: Double? = null,
-    val googleRatingsTotal: Int? = null,
-    val password: String? = null
-)
-
-data class DeleteRequest(
-    val password: String? = null
+    val googleRatingsTotal: Int? = null
 )

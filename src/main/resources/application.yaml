@@ -15,3 +15,6 @@ spring:
 
 app:
   admin-password: ${ADMIN_PASSWORD:}
+  jwt:
+    secret: ${JWT_SECRET:}
+    expiration-hours: 24

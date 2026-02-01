@@ -17,6 +17,7 @@ data class AttemptInfo(
 @Service
 class AuthService(
     private val loginAttemptRepository: LoginAttemptRepository,
+    private val jwtProvider: JwtProvider,
     @Value("\${app.admin-password:}") private val adminPassword: String
 ) {
     // 메모리에서 실패 횟수 관리 (IP -> AttemptInfo)
@@ -27,23 +28,20 @@ class AuthService(
         const val BLOCK_DURATION_HOURS = 24L
     }
 
-    fun validatePassword(
-        password: String?,
-        ipAddress: String,
-        userAgent: String?,
-        endpoint: String
-    ) {
-        // 차단 여부 확인
+    fun login(password: String, ipAddress: String, userAgent: String?): String {
         checkIfBlocked(ipAddress)
 
-        // 비밀번호 확인
-        if (password == null || password != adminPassword) {
-            handleFailedAttempt(ipAddress, userAgent, endpoint)
+        if (password != adminPassword) {
+            handleFailedAttempt(ipAddress, userAgent, "POST /api/auth/login")
             throw UnauthorizedException("권한이 없습니다. 관리자 비밀번호를 확인해주세요")
         }
 
-        // 성공 시 실패 횟수 초기화
         attemptCache.remove(ipAddress)
+        return jwtProvider.generateToken()
+    }
+
+    fun validateToken(token: String): Boolean {
+        return jwtProvider.validateToken(token)
     }
 
     private fun checkIfBlocked(ipAddress: String) {
