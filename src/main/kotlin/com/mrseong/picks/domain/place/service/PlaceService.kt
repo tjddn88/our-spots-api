@@ -34,9 +34,9 @@ class PlaceService(
 
     @Transactional
     fun createPlace(request: PlaceCreateRequest): PlaceResponse {
-        // 주소 중복 체크
-        if (placeRepository.existsByAddress(request.address)) {
-            throw DuplicateException("이미 등록된 주소입니다: ${request.address}")
+        // 이름+주소 중복 체크
+        if (placeRepository.existsByNameAndAddress(request.name, request.address)) {
+            throw DuplicateException("동일한 이름으로 이미 등록된 주소입니다: ${request.name}")
         }
 
         val place = Place(
