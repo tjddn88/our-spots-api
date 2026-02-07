@@ -22,7 +22,7 @@ class PlaceController(
     }
 
     @GetMapping("/{id}")
-    fun getPlace(@PathVariable id: Long): ApiResponse<PlaceDetailResponse> {
+    fun getPlace(@PathVariable id: Long): ApiResponse<PlaceResponse> {
         return ApiResponse.success(placeService.getPlace(id))
     }
 

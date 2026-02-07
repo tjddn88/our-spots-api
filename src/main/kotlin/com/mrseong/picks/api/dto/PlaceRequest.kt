@@ -22,8 +22,6 @@ data class PlaceCreateRequest(
 
     val description: String? = null,
 
-    val imageUrl: String? = null,
-
     val grade: Int? = null
 )
 
@@ -34,7 +32,6 @@ data class PlaceUpdateRequest(
     val latitude: Double? = null,
     val longitude: Double? = null,
     val description: String? = null,
-    val imageUrl: String? = null,
     val grade: Int? = null,
     val googlePlaceId: String? = null,
     val googleRating: Double? = null,

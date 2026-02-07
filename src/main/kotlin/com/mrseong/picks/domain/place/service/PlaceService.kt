@@ -26,10 +26,10 @@ class PlaceService(
         return places.map { PlaceResponse.from(it) }
     }
 
-    fun getPlace(id: Long): PlaceDetailResponse {
+    fun getPlace(id: Long): PlaceResponse {
         val place = placeRepository.findById(id)
             .orElseThrow { NotFoundException("Place not found: $id") }
-        return PlaceDetailResponse.from(place)
+        return PlaceResponse.from(place)
     }
 
     @Transactional
@@ -46,7 +46,6 @@ class PlaceService(
             latitude = request.latitude,
             longitude = request.longitude,
             description = request.description,
-            imageUrl = request.imageUrl,
             grade = request.grade
         )
         return PlaceResponse.from(placeRepository.save(place))
@@ -63,7 +62,6 @@ class PlaceService(
         request.latitude?.let { place.latitude = it }
         request.longitude?.let { place.longitude = it }
         request.description?.let { place.description = it }
-        request.imageUrl?.let { place.imageUrl = it }
         request.grade?.let { place.grade = it }
         request.googlePlaceId?.let { place.googlePlaceId = it }
         request.googleRating?.let { place.googleRating = it }

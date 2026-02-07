@@ -32,9 +32,7 @@ class Place(
 
     var description: String? = null,
 
-    var imageUrl: String? = null,
-
-    // 맛집 등급 (1=최고, 2=좋음, 3=보통) - 맛집에만 적용
+    // 맛집 등급 (1=최고, 2=좋음, 3=보통)
     var grade: Int? = null,
 
     // Google Places API 연동
@@ -42,7 +40,11 @@ class Place(
     var googleRating: Double? = null,
     var googleRatingsTotal: Int? = null,
 
-    // 나중에 회원별 개인화를 위한 필드 (현재는 미사용)
+    // === 미사용 필드 (DB 스키마 호환성을 위해 유지) ===
+    @Deprecated("미사용 필드 - 프론트엔드에서 이미지 기능 제거됨")
+    var imageUrl: String? = null,
+
+    @Deprecated("미사용 필드 - 회원 기능 미구현")
     var userId: Long? = null,
 
     @Column(nullable = false, updatable = false)
