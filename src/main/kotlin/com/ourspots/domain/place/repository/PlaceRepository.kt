@@ -4,6 +4,7 @@ import com.ourspots.domain.place.entity.Place
 import com.ourspots.domain.place.entity.PlaceType
 import org.springframework.data.jpa.repository.JpaRepository
 import org.springframework.data.jpa.repository.Query
+import java.time.LocalDateTime
 
 interface PlaceRepository : JpaRepository<Place, Long> {
 
@@ -32,5 +33,17 @@ interface PlaceRepository : JpaRepository<Place, Long> {
         neLng: Double
     ): List<Place>
 
-    fun findByGoogleRatingIsNull(): List<Place>
+    @Query("""
+        SELECT p FROM Place p
+        WHERE p.googleRatingFailCount < :maxFailCount
+        AND (
+            p.googleRating IS NULL
+            OR p.googleRatingUpdatedAt IS NULL
+            OR p.googleRatingUpdatedAt < :cutoffDate
+        )
+    """)
+    fun findPlacesEligibleForGoogleSync(
+        maxFailCount: Int,
+        cutoffDate: LocalDateTime
+    ): List<Place>
 }

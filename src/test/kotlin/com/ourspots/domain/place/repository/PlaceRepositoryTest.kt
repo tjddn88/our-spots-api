@@ -10,6 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest
 import org.springframework.boot.test.autoconfigure.orm.jpa.TestEntityManager
 import org.springframework.test.context.ActiveProfiles
+import java.time.LocalDateTime
 import kotlin.test.assertEquals
 import kotlin.test.assertFalse
 import kotlin.test.assertTrue
@@ -173,12 +174,98 @@ class PlaceRepositoryTest {
         }
     }
 
+    @Nested
+    @DisplayName("findPlacesEligibleForGoogleSync")
+    inner class FindPlacesEligibleForGoogleSync {
+
+        private val maxFailCount = 3
+        private val cutoffDate: LocalDateTime = LocalDateTime.now().minusMonths(6)
+
+        @Test
+        fun findPlacesEligibleForGoogleSync_whenRatingNullAndFailCountZero_shouldInclude() {
+            // given
+            createPlace("신규 맛집", PlaceType.RESTAURANT)
+
+            // when
+            val result = placeRepository.findPlacesEligibleForGoogleSync(maxFailCount, cutoffDate)
+
+            // then
+            assertEquals(1, result.size)
+            assertEquals("신규 맛집", result[0].name)
+        }
+
+        @Test
+        fun findPlacesEligibleForGoogleSync_whenFailCountExceedsMax_shouldExclude() {
+            // given
+            createPlace("실패 맛집", PlaceType.RESTAURANT, googleRatingFailCount = 3)
+
+            // when
+            val result = placeRepository.findPlacesEligibleForGoogleSync(maxFailCount, cutoffDate)
+
+            // then
+            assertEquals(0, result.size)
+        }
+
+        @Test
+        fun findPlacesEligibleForGoogleSync_whenUpdatedAt7MonthsAgo_shouldInclude() {
+            // given
+            createPlace(
+                "오래된 맛집", PlaceType.RESTAURANT,
+                googleRating = 4.5,
+                googleRatingUpdatedAt = LocalDateTime.now().minusMonths(7)
+            )
+
+            // when
+            val result = placeRepository.findPlacesEligibleForGoogleSync(maxFailCount, cutoffDate)
+
+            // then
+            assertEquals(1, result.size)
+            assertEquals("오래된 맛집", result[0].name)
+        }
+
+        @Test
+        fun findPlacesEligibleForGoogleSync_whenUpdatedAt3MonthsAgo_shouldExclude() {
+            // given
+            createPlace(
+                "최신 맛집", PlaceType.RESTAURANT,
+                googleRating = 4.5,
+                googleRatingUpdatedAt = LocalDateTime.now().minusMonths(3)
+            )
+
+            // when
+            val result = placeRepository.findPlacesEligibleForGoogleSync(maxFailCount, cutoffDate)
+
+            // then
+            assertEquals(0, result.size)
+        }
+
+        @Test
+        fun findPlacesEligibleForGoogleSync_whenRatingExistsButUpdatedAtNull_shouldInclude() {
+            // given (마이그레이션 케이스: 기존 동기화됐지만 타임스탬프 없음)
+            createPlace(
+                "마이그레이션 맛집", PlaceType.RESTAURANT,
+                googleRating = 4.0,
+                googleRatingUpdatedAt = null
+            )
+
+            // when
+            val result = placeRepository.findPlacesEligibleForGoogleSync(maxFailCount, cutoffDate)
+
+            // then
+            assertEquals(1, result.size)
+            assertEquals("마이그레이션 맛집", result[0].name)
+        }
+    }
+
     private fun createPlace(
         name: String,
         type: PlaceType,
         address: String = "서울시 테스트구",
         lat: Double = 37.5,
-        lng: Double = 127.0
+        lng: Double = 127.0,
+        googleRating: Double? = null,
+        googleRatingFailCount: Int = 0,
+        googleRatingUpdatedAt: LocalDateTime? = null
     ): Place {
         val place = Place(
             name = name,
@@ -186,7 +273,10 @@ class PlaceRepositoryTest {
             address = address,
             latitude = lat,
             longitude = lng,
-            grade = 1
+            grade = 1,
+            googleRating = googleRating,
+            googleRatingFailCount = googleRatingFailCount,
+            googleRatingUpdatedAt = googleRatingUpdatedAt
         )
         entityManager.persist(place)
         entityManager.flush()

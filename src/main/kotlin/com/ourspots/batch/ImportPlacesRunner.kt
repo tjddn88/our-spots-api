@@ -11,6 +11,9 @@ import org.springframework.boot.ApplicationArguments
 import org.springframework.boot.ApplicationRunner
 import org.springframework.boot.autoconfigure.condition.ConditionalOnProperty
 import org.springframework.context.annotation.Profile
+import org.springframework.http.HttpEntity
+import org.springframework.http.HttpHeaders
+import org.springframework.http.HttpMethod
 import org.springframework.stereotype.Component
 import org.springframework.web.client.RestTemplate
 import java.io.File
@@ -25,6 +28,12 @@ class ImportPlacesRunner(
 
     private val log = LoggerFactory.getLogger(javaClass)
     private val restTemplate = RestTemplate()
+
+    companion object {
+        private const val KAKAO_ADDRESS_URL = "https://dapi.kakao.com/v2/local/search/address.json?query={query}"
+        private const val KAKAO_KEYWORD_URL = "https://dapi.kakao.com/v2/local/search/keyword.json?query={query}"
+        private const val API_DELAY_MS = 200L
+    }
 
     override fun run(args: ApplicationArguments) {
         val filePath = args.getOptionValues("file")?.firstOrNull()
@@ -103,7 +112,7 @@ class ImportPlacesRunner(
                 log.info("  성공 (${String.format("%.4f", coords.first)}, ${String.format("%.4f", coords.second)})")
                 success++
 
-                Thread.sleep(200)
+                Thread.sleep(API_DELAY_MS)
             } catch (e: Exception) {
                 log.error("  에러: ${e.message}")
                 failed++
@@ -154,58 +163,27 @@ class ImportPlacesRunner(
     }
 
     private fun getCoordinates(address: String, name: String): Pair<Double, Double>? {
-        val addressResult = searchByAddress(address)
-        if (addressResult != null) return addressResult
-
-        return searchByKeyword("$name $address")
+        return searchKakao(KAKAO_ADDRESS_URL, address)
+            ?: searchKakao(KAKAO_KEYWORD_URL, "$name $address")
     }
 
     @Suppress("UNCHECKED_CAST")
-    private fun searchByAddress(query: String): Pair<Double, Double>? {
+    private fun searchKakao(url: String, query: String): Pair<Double, Double>? {
         return try {
-            val url = "https://dapi.kakao.com/v2/local/search/address.json?query={query}"
-            val headers = org.springframework.http.HttpHeaders().apply {
+            val headers = HttpHeaders().apply {
                 set("Authorization", "KakaoAK $kakaoApiKey")
             }
-            val entity = org.springframework.http.HttpEntity<Void>(headers)
             val response = restTemplate.exchange(
-                url, org.springframework.http.HttpMethod.GET, entity,
+                url, HttpMethod.GET, HttpEntity<Void>(headers),
                 Map::class.java, query
             )
             val documents = response.body?.get("documents") as? List<Map<String, Any>>
             if (!documents.isNullOrEmpty()) {
                 val doc = documents[0]
-                val lat = (doc["y"] as String).toDouble()
-                val lng = (doc["x"] as String).toDouble()
-                Pair(lat, lng)
+                Pair((doc["y"] as String).toDouble(), (doc["x"] as String).toDouble())
             } else null
         } catch (e: Exception) {
-            log.debug("주소 검색 실패: ${e.message}")
-            null
-        }
-    }
-
-    @Suppress("UNCHECKED_CAST")
-    private fun searchByKeyword(query: String): Pair<Double, Double>? {
-        return try {
-            val url = "https://dapi.kakao.com/v2/local/search/keyword.json?query={query}"
-            val headers = org.springframework.http.HttpHeaders().apply {
-                set("Authorization", "KakaoAK $kakaoApiKey")
-            }
-            val entity = org.springframework.http.HttpEntity<Void>(headers)
-            val response = restTemplate.exchange(
-                url, org.springframework.http.HttpMethod.GET, entity,
-                Map::class.java, query
-            )
-            val documents = response.body?.get("documents") as? List<Map<String, Any>>
-            if (!documents.isNullOrEmpty()) {
-                val doc = documents[0]
-                val lat = (doc["y"] as String).toDouble()
-                val lng = (doc["x"] as String).toDouble()
-                Pair(lat, lng)
-            } else null
-        } catch (e: Exception) {
-            log.debug("키워드 검색 실패: ${e.message}")
+            log.debug("카카오 검색 실패 ($url): ${e.message}")
             null
         }
     }

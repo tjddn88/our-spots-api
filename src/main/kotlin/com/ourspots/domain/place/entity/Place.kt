@@ -39,6 +39,8 @@ class Place(
     var googlePlaceId: String? = null,
     var googleRating: Double? = null,
     var googleRatingsTotal: Int? = null,
+    var googleRatingFailCount: Int = 0,
+    var googleRatingUpdatedAt: LocalDateTime? = null,
 
     // === 미사용 필드 (DB 스키마 호환성을 위해 유지) ===
     @Deprecated("미사용 필드 - 프론트엔드에서 이미지 기능 제거됨")
