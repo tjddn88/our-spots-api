@@ -4,10 +4,12 @@ import com.mrseong.picks.common.exception.UnauthorizedException
 import com.mrseong.picks.domain.auth.service.JwtProvider
 import jakarta.servlet.http.HttpServletRequest
 import jakarta.servlet.http.HttpServletResponse
+import org.springframework.boot.autoconfigure.condition.ConditionalOnWebApplication
 import org.springframework.stereotype.Component
 import org.springframework.web.servlet.HandlerInterceptor
 
 @Component
+@ConditionalOnWebApplication
 class JwtInterceptor(
     private val jwtProvider: JwtProvider
 ) : HandlerInterceptor {

@@ -31,4 +31,6 @@ interface PlaceRepository : JpaRepository<Place, Long> {
         neLat: Double,
         neLng: Double
     ): List<Place>
+
+    fun findByGoogleRatingIsNull(): List<Place>
 }
