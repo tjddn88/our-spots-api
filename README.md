@@ -92,6 +92,46 @@ src/main/kotlin/com/ourspots/
 └── config/        # CORS, Cache, JWT 인터셉터
 ```
 
+## 아키텍처
+
+```mermaid
+graph LR
+    subgraph Client
+        B["Browser<br/>(React 19 + 카카오맵)"]
+    end
+
+    subgraph Oracle Cloud - Always Free
+        N["Nginx<br/>HTTPS · Rate Limit<br/>Security Headers"]
+        W["Next.js :3000<br/>SSR · Static Assets"]
+        A["Spring Boot :8080<br/>REST API · Cache"]
+    end
+
+    subgraph External
+        DB[("Supabase<br/>PostgreSQL")]
+        K["Kakao Maps SDK<br/>(브라우저 직접 호출)"]
+    end
+
+    B -->|"① 페이지 요청"| N
+    N -->|"/ → proxy"| W
+    W -->|"HTML + JS"| B
+    B -->|"② API 호출 (/api/*)"| N
+    N -->|"/api/* → proxy"| A
+    A -->|JDBC| DB
+    B -.->|"③ 장소 검색"| K
+
+    style N fill:#2d3748,color:#fff
+    style W fill:#0070f3,color:#fff
+    style A fill:#6DB33F,color:#fff
+    style DB fill:#3ECF8E,color:#fff
+    style K fill:#FFCD00,color:#000
+```
+
+**배포 구성:**
+- **서버**: Oracle Cloud ARM (Ubuntu 22.04), systemd로 프로세스 관리
+- **SSL**: Let's Encrypt (certbot 자동 갱신)
+- **배포**: SSH → git pull → build → systemctl restart
+- **보안**: nginx Rate Limiting → fail2ban IP 차단 → App 레벨 Rate Limiting (3중 방어)
+
 ## 앱 플로우
 
 ### 초기 로딩 → 마커 표시
