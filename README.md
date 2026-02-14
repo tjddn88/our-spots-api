@@ -102,8 +102,8 @@ graph LR
 
     subgraph Oracle Cloud - Always Free
         N["Nginx<br/>HTTPS · Rate Limit<br/>Security Headers"]
-        W["Next.js :3000<br/>SSR · Static Assets"]
-        A["Spring Boot :8080<br/>REST API · Cache"]
+        W["Next.js<br/>SSR · Static Assets"]
+        A["Spring Boot<br/>REST API · Cache"]
     end
 
     subgraph External
@@ -125,6 +125,9 @@ graph LR
     style DB fill:#3ECF8E,color:#fff
     style K fill:#FFCD00,color:#000
 ```
+
+- Next.js는 페이지 렌더링만 담당하고, Spring Boot와 직접 통신하지 않음
+- 브라우저(React 앱)가 Nginx를 통해 API를 호출하는 구조
 
 **배포 구성:**
 - **서버**: Oracle Cloud ARM (Ubuntu 22.04), systemd로 프로세스 관리
