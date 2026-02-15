@@ -1,6 +1,7 @@
 package com.ourspots.domain.auth.controller
 
 import com.ourspots.common.response.ApiResponse
+import com.ourspots.common.util.RequestUtils
 import com.ourspots.domain.auth.service.AuthService
 import jakarta.servlet.http.HttpServletRequest
 import org.springframework.web.bind.annotation.PostMapping
@@ -24,18 +25,9 @@ class AuthController(
     ): ApiResponse<LoginResponse> {
         val token = authService.login(
             password = request.password,
-            ipAddress = getClientIp(httpRequest),
+            ipAddress = RequestUtils.getClientIp(httpRequest),
             userAgent = httpRequest.getHeader("User-Agent")
         )
         return ApiResponse.success(LoginResponse(token))
-    }
-
-    private fun getClientIp(request: HttpServletRequest): String {
-        val xForwardedFor = request.getHeader("X-Forwarded-For")
-        return if (!xForwardedFor.isNullOrBlank()) {
-            xForwardedFor.split(",").first().trim()
-        } else {
-            request.remoteAddr ?: "unknown"
-        }
     }
 }
