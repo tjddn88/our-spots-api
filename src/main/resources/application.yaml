@@ -6,6 +6,9 @@ spring:
     username: ${DATABASE_USERNAME:postgres}
     password: ${DATABASE_PASSWORD:}
     driver-class-name: org.postgresql.Driver
+    hikari:
+      maximum-pool-size: 5
+      minimum-idle: 2
   jpa:
     hibernate:
       # 운영 환경: validate (스키마 검증만), 로컬: local 프로파일에서 update 사용
